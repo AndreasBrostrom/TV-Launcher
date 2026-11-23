@@ -30,9 +30,9 @@ Tools has three tiles of ours: **Files**, **Network** (the TV's network screen) 
 
 ### Apps
 
-All installed apps by name, with Play Store and F-Droid first. Long-press one to add
-it to Home. Preloaded apps without a TV entry are left out, and Philips' How to... is
-hidden. At the bottom:
+All installed apps by name, with Play Store, F-Droid and Flicky (an F-Droid client)
+first. Long-press one to add it to Home. Preloaded apps without a TV entry are left
+out, and Philips' How to... is hidden. At the bottom:
 
 - **All apps:** Android's app list.
 - **Stop all apps:** stops the listed apps that are in the background and clears the

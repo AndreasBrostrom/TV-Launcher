@@ -431,6 +431,6 @@ class MainActivity : Activity() {
         const val COLUMNS = 6
 
         /** First on the Apps screen, in this order. */
-        val PINNED = listOf(PLAY_STORE, F_DROID)
+        val PINNED = listOf(PLAY_STORE, F_DROID, FLICKY)
     }
 }

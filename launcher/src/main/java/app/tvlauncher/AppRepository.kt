@@ -20,6 +20,7 @@ class AppEntry(
 const val PLAY_STORE = "com.android.vending"
 
 const val F_DROID = "org.fdroid.fdroid"
+const val FLICKY = "app.flicky"
 const val FILES = "app.tvfiles"
 
 /** System parts without a launcher entry, which we add ourselves. */
