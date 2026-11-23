@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingStart="32dp"
+        android:paddingTop="20dp"
+        android:paddingEnd="48dp"
+        android:paddingBottom="8dp">
+
+        <TextView android:id="@+id/nav_home" style="@style/NavText" android:text="@string/home" />
+        <TextView android:id="@+id/nav_store" style="@style/NavText" android:text="@string/store" />
+        <TextView android:id="@+id/nav_apps" style="@style/NavText" android:text="@string/apps" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageView android:id="@+id/nav_sources" style="@style/NavIcon" android:contentDescription="@string/sources" android:src="@drawable/ic_sources" />
+        <ImageView android:id="@+id/nav_settings" style="@style/NavIcon" android:contentDescription="@string/tv_settings" android:src="@drawable/ic_settings" />
+        <ImageView android:id="@+id/nav_profile" style="@style/NavIcon" android:contentDescription="@string/profile" android:src="@drawable/ic_profile" />
+
+        <TextClock
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:format12Hour="d MMM HH:mm"
+            android:format24Hour="d MMM HH:mm"
+            android:textColor="@color/text"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fadingEdge="vertical"
+        android:fadingEdgeLength="24dp"
+        android:focusable="false"
+        android:requiresFadingEdge="vertical"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/rows"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="32dp" />
+    </ScrollView>
+</LinearLayout>
