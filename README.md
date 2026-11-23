@@ -184,6 +184,17 @@ adb shell pm disable-user --user 0 org.droidtv.nettvrecommender   # Top Picks
 adb shell pm disable-user --user 0 com.plexapp.android            # Plex
 adb shell pm disable-user --user 0 fr.bouyguestelecom.tv.bboxapi  # Remote Helper
 adb shell pm disable-user --user 0 safewatch.tv.vpn               # Safe Watch TV
+adb shell pm disable-user --user 0 tv.inscape.tvclient.inscapeacr # Inscape
+adb shell pm disable-user --user 0 org.droidtv.usagelogger        # Usage logger
+adb shell pm disable-user --user 0 com.opera.sdk.example          # Internet Browser
+adb shell pm disable-user --user 0 org.droidtv.twittershare       # Twitter
+adb shell pm disable-user --user 0 org.droidtv.dropboxprovider    # Dropbox
+adb shell pm disable-user --user 0 org.droidtv.alhuewizard        # Ambilight+Hue
+adb shell pm disable-user --user 0 com.google.android.videos      # Google Play Movies
+adb shell pm disable-user --user 0 com.google.android.music       # Google Play Music
+adb shell pm disable-user --user 0 com.google.android.play.games  # Google Play Games
+adb shell pm disable-user --user 0 com.google.android.tvtutorials # Google TV tutorials
+adb shell pm disable-user --user 0 com.google.android.katniss     # Google search and voice
 ```
 
 Re-enable:
@@ -196,13 +207,26 @@ adb shell pm enable org.droidtv.nettvrecommender   # Top Picks
 adb shell pm enable com.plexapp.android            # Plex
 adb shell pm enable fr.bouyguestelecom.tv.bboxapi  # Remote Helper
 adb shell pm enable safewatch.tv.vpn               # Safe Watch TV
+adb shell pm enable tv.inscape.tvclient.inscapeacr # Inscape
+adb shell pm enable org.droidtv.usagelogger        # Usage logger
+adb shell pm enable com.opera.sdk.example          # Internet Browser
+adb shell pm enable org.droidtv.twittershare       # Twitter
+adb shell pm enable org.droidtv.dropboxprovider    # Dropbox
+adb shell pm enable org.droidtv.alhuewizard        # Ambilight+Hue
+adb shell pm enable com.google.android.videos      # Google Play Movies
+adb shell pm enable com.google.android.music       # Google Play Music
+adb shell pm enable com.google.android.play.games  # Google Play Games
+adb shell pm enable com.google.android.tvtutorials # Google TV tutorials
+adb shell pm enable com.google.android.katniss     # Google search and voice
 ```
 
-### Other candidates
+### What you lose
+
+For the ones where it may matter:
 
 | Package | What it is | What you lose |
 | --- | --- | --- |
-| `tv.inscape.tvclient.inscapeacr` | Inscape viewing-data service | Nothing you use. The separate `inscape_fp` process may keep running |
+| `tv.inscape.tvclient.inscapeacr` | Inscape viewing-data service | Nothing you use. The separate `inscape_fp` process keeps running |
 | `org.droidtv.usagelogger` | Philips usage logger | Nothing you use |
 | `com.opera.sdk.example` | Opera-based browser | The TV's web browser |
 | `org.droidtv.twittershare` | Twitter sharing | Sharing to Twitter |
@@ -213,13 +237,6 @@ adb shell pm enable safewatch.tv.vpn               # Safe Watch TV
 | `com.google.android.play.games` | Google Play Games | Game sign-in and saves |
 | `com.google.android.tvtutorials` | Google TV tutorials | The tutorials |
 | `com.google.android.katniss` | Google search and voice | Voice search on the remote |
-
-### Uninstall instead
-
-These are ordinary installed apps, so they can be removed the normal way:
-`com.google.android.apps.tachyon` (Meet) and the Hindi and Zhuyin keyboards
-(`com.google.android.apps.inputmethod.hindi`,
-`com.google.android.apps.inputmethod.zhuyin`).
 
 ### Do not disable
 
