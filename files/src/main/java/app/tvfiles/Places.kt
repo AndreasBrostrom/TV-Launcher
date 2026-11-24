@@ -27,6 +27,13 @@ object Places {
         Place(context.getString(label), Environment.getExternalStoragePublicDirectory(folder))
     }
 
+    /** Pictures/Background, however its capitals are written. It may not exist. */
+    fun backgrounds(
+        pictures: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+    ): File = pictures.listFiles().orEmpty()
+        .firstOrNull { it.isDirectory && it.name.equals(BACKGROUND, ignoreCase = true) }
+        ?: File(pictures, BACKGROUND)
+
     /** SD cards and USB drives, if any are plugged in and readable. */
     fun otherStorage(context: Context): List<Place> =
         removable(context).filter { it.folder()?.canRead() == true }.map { Place(it.label(context), it.folder()) }
@@ -47,6 +54,8 @@ object Places {
     private fun removable(context: Context): List<StorageVolume> =
         context.getSystemService(StorageManager::class.java).storageVolumes
             .filter { !it.isPrimary && it.state in MOUNTED }
+
+    private const val BACKGROUND = "Background"
 
     private val MOUNTED = setOf(Environment.MEDIA_MOUNTED, Environment.MEDIA_MOUNTED_READ_ONLY)
 

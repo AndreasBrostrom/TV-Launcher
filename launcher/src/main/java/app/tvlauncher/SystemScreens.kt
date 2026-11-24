@@ -73,5 +73,13 @@ class SystemScreens(private val activity: Activity) {
         start(Intent().setComponent(page).putExtra("account_name", name), Intent(Settings.ACTION_SETTINGS))
     }
 
+    /** Files has the storage access, so its picker shows the images and returns just one. */
+    @Suppress("DEPRECATION") // the replacement needs androidx
+    fun chooseBackground(requestCode: Int) {
+        val picker = Intent().setClassName(FILES, "$FILES.BackgroundPicker")
+        runCatching { activity.startActivityForResult(picker, requestCode) }
+            .onFailure { activity.toast(R.string.files_missing) }
+    }
+
     private fun uriOf(app: AppEntry): Uri = Uri.fromParts("package", app.pkg, null)
 }

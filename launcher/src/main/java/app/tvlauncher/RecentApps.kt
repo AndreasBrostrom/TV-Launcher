@@ -3,6 +3,7 @@ package app.tvlauncher
 import android.app.AppOpsManager
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Process
@@ -22,14 +23,25 @@ object RecentApps {
 
     /** Packages opened within the last two hours and after [since]. Slow: call off the main thread. */
     fun load(context: Context, since: Long): Set<String> {
-        val now = System.currentTimeMillis()
-        val events = context.getSystemService(UsageStatsManager::class.java).queryEvents(maxOf(now - WINDOW_MS, since), now)
-        val event = UsageEvents.Event()
         val found = mutableSetOf<String>()
+        forEachOpened(context, maxOf(System.currentTimeMillis() - WINDOW_MS, since)) { found += it.packageName }
+        return found
+    }
+
+    /** The screen opened last, if any was after [since]. */
+    fun lastOpened(context: Context, since: Long): ComponentName? {
+        var last: ComponentName? = null
+        forEachOpened(context, since) { last = ComponentName(it.packageName, it.className) }
+        return last
+    }
+
+    private fun forEachOpened(context: Context, since: Long, action: (UsageEvents.Event) -> Unit) {
+        val events = context.getSystemService(UsageStatsManager::class.java)
+            .queryEvents(since, System.currentTimeMillis())
+        val event = UsageEvents.Event()
         while (events?.getNextEvent(event) == true) {
             @Suppress("DEPRECATION") // its replacement needs API 29
-            if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) found += event.packageName
+            if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) action(event)
         }
-        return found
     }
 }

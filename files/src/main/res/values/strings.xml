@@ -23,5 +23,7 @@
     <string name="delete">Delete</string>
     <string name="delete_confirm">Delete %1$s?</string>
     <string name="delete_folder_confirm">Delete %1$s and everything in it?</string>
+    <string name="choose_background">Choose background</string>
+    <string name="no_backgrounds">No images yet. Put some in Pictures/Background.</string>
     <string name="failed">Could not do that. The storage may be read-only, or the name is taken.</string>
 </resources>

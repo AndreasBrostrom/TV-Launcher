@@ -37,9 +37,22 @@ out, and Philips' How to... is hidden. At the bottom:
 - **All apps:** Android's app list.
 - **Stop all apps:** stops the listed apps that are in the background and clears the
   badges. Android spares apps in active use, and apps may start again on their own.
+- **Background:** choose an image from `Pictures/Background`, or remove it, see below.
 - **Show recently used:** only there until Usage access is on, see Setup.
 - **Shut down, Reboot and Suspend:** the first two ask first.
-- **Open old launcher:** once, or as the default again.
+- **Old launcher:** **Open** it once, enabling it first if needed, or **Disable** it. See
+  Going back to the old launcher.
+
+### Background
+
+Plain dark grey unless you choose an image. Put images in `Pictures/Background` on the
+internal storage (`/sdcard/Pictures/Background`; capitals do not matter), then go to
+**Apps > Background**. Files makes the folder the first time the picker opens, and
+images in subfolders are not shown. The image fills the screen, cropped if needed, and
+is darkened so the text stays readable.
+
+Files shows the picker and must be installed. The launcher gets only the image you pick
+and keeps its own copy, so deleting the original changes nothing.
 
 ### Badge
 
@@ -50,7 +63,15 @@ Android does not let apps see what is actually running.
 
 Philips opens the last TV input after a full start, even an empty one. If the launcher
 is the default, it opens itself on top, unless 90 seconds have passed since the start. In
-a test it took 17 seconds. Waking from standby is left alone.
+a test it took 17 seconds.
+
+### Waking from standby
+
+Google's `com.google.android.tvrecommendations` opens the old launcher by name soon after
+the TV wakes from more than about 30 seconds of standby, whichever launcher is the
+default. If that happens within 15 seconds of waking, the launcher opens itself on top,
+so the old one may show briefly; in a test, for under a second. Inputs and other apps are
+left alone. This needs Usage access, see Setup, and that the launcher is the default.
 
 ## Files
 
@@ -92,16 +113,17 @@ show once; press Home to return.
        adb shell run-as app.tvlauncher pm enable app.tvlauncher/app.tvlauncher.HomeAlias
        adb shell cmd package set-home-activity app.tvlauncher/app.tvlauncher.HomeAlias
 
-2. **Badge:** **Apps > Show recently used**, then Special app access, Usage access, and
-   turn on TV Launcher.
+2. **Badge and waking:** **Apps > Show recently used**, then Special app access, Usage
+   access, and turn on TV Launcher.
 3. **Power buttons and Force stop:** use one of them and choose **Always allow** when
    the TV asks about debugging.
 
 ### About the adb access
 
-Android reserves shutdown, reboot, suspend and force stop for system apps. The launcher
-therefore sends these four, and only these, to the TV's own adb on `127.0.0.1:5555`
-(`AdbActions.kt`, `LocalAdb.kt`). Everything else uses normal Android permissions.
+Android reserves shutdown, reboot, suspend, force stop, and enabling or disabling the old
+launcher for system apps. The launcher therefore sends these, and only these, to the TV's
+own adb on `127.0.0.1:5555` (`AdbActions.kt`, `OldLauncher.kt`, `LocalAdb.kt`). Everything
+else uses normal Android permissions.
 
 - The approval gives the launcher full adb access to the TV. Its key stays in the app's
   private storage.
@@ -114,16 +136,22 @@ therefore sends these four, and only these, to the TV's own adb on `127.0.0.1:55
 
 ## Going back to the old launcher
 
-The old launcher (Google TV, `com.google.android.tvlauncher`) is never removed or
-changed, so any one of these should bring it back. **Never disable or uninstall it.**
+The old launcher (Google TV, `com.google.android.tvlauncher`) is never removed. **Never
+uninstall it.** **Apps > Old launcher > Disable** turns it off together with
+`com.google.android.tvrecommendations`, which opens it on every wake and would fail
+without it. This stops the old launcher from showing at wake. It is only offered while TV
+Launcher is the default, and needs the adb access above. Google's recommendations go with
+it, and maybe the notification panel.
+
+**While it is disabled there is no other home screen.** Enable it with **Open** before
+uninstalling TV Launcher or clearing its data.
 
 ### On the TV
 
-- **In the launcher:** Apps, scroll to the bottom, **Open old launcher**, then
-  **Make old launcher the default**. Keeps the app and your Home layout.
-  **Open once** does not change the default.
-- **In Android settings:** the settings cog, then Apps, TV Launcher, **Uninstall**.
-  Removes your Home layout too.
+1. **Apps > Old launcher > Open**, so that it is enabled. TV Launcher is still the default,
+   and the old launcher stays enabled until you disable it again.
+2. To go back for good: the settings cog, then Apps, TV Launcher, **Uninstall**. Removes
+   your Home layout too.
 
 ### From a computer
 
@@ -131,6 +159,11 @@ Works even if the launcher is broken or the screen is stuck. USB/network
 debugging must be on.
 
     adb connect <tv-ip>:5555
+
+First enable the old launcher, if it was disabled:
+
+    adb shell pm enable com.google.android.tvlauncher
+    adb shell pm enable com.google.android.tvrecommendations
 
 Switch back but keep the app:
 
@@ -149,7 +182,9 @@ The first should print `com.google.android.tvlauncher/.MainActivity`.
 
 ### Automatic
 
-If the launcher crashes three times within a minute, it gives up the home role.
+If the launcher crashes three times within a minute, it enables the old launcher if needed
+and gives up the home role. If enabling fails, it keeps the role, as there would be no
+other home screen.
 
 ## Disabling apps on the TV
 
@@ -242,8 +277,8 @@ For the ones where it may matter:
 
 | Package | Why |
 | --- | --- |
-| `com.google.android.tvlauncher` | The old launcher, your way back |
-| `com.google.android.tvrecommendations` | Fills the old launcher's rows |
+| `com.google.android.tvlauncher` | The old launcher, your way back. Use **Apps > Old launcher** instead |
+| `com.google.android.tvrecommendations` | Goes with the old launcher, see above |
 | `org.droidtv.leanbackcustomizer` | Customizes the old launcher |
 | `com.android.tv.settings`, `org.droidtv.settings` | Settings |
 | `org.droidtv.eum` (How to...) | **Sources stops working without it** (tested). The launcher hides it instead |
@@ -274,8 +309,11 @@ Read from the TV over adb:
 ## Not yet tested on the TV
 
 - Suspend, Reboot, Shut down and Force stop
-- Going back with the in-app button, with adb while the launcher is the default, and
-  after repeated crashes. `adb uninstall` worked before it was the default.
+- Restarting the TV, and waking it, while the old launcher is disabled
+- Going back with adb while the launcher is the default, and after repeated crashes,
+  with the old launcher enabled and disabled. `adb uninstall` worked before it was the
+  default.
+- Waking after hours in standby (under 4 minutes works)
 - Files: rename, delete, new folder, image preview, SD cards and USB drives
 
 ## License

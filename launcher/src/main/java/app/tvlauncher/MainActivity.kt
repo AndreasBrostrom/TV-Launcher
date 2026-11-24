@@ -3,9 +3,11 @@ package app.tvlauncher
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -42,6 +44,9 @@ class MainActivity : Activity() {
     private var apps: List<AppEntry> = emptyList()
     private var layout = HomeLayout.DEFAULT
     private var screen = Screen.HOME
+
+    /** Which background is on screen, as in [Background.version]. */
+    private var background = Background.NONE
 
     /** Packages that get the corner badge. */
     private var recent: Set<String> = emptySet()
@@ -91,6 +96,7 @@ class MainActivity : Activity() {
             render()
         }
         refreshRecent()
+        if (Background.version(this) != background) showBackground()
         if (screen == Screen.APPS) render() // Usage access may have been switched
     }
 
@@ -126,7 +132,11 @@ class MainActivity : Activity() {
 
     @Deprecated("The replacement needs androidx")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_ACCOUNT && resultCode == RESULT_OK) screens.openAccount(data)
+        if (resultCode != RESULT_OK) return
+        when (requestCode) {
+            REQUEST_ACCOUNT -> screens.openAccount(data)
+            REQUEST_BACKGROUND -> data?.data?.let(::useBackground)
+        }
     }
 
     // region Data
@@ -169,6 +179,18 @@ class MainActivity : Activity() {
             prefs.edit().putLong(KEY_STOPPED, System.currentTimeMillis()).apply()
             toast(R.string.stopped_all)
             refreshRecent()
+        }
+    }
+
+    private fun useBackground(image: Uri) = inBackground(worker, { Background.save(this, image) }) { saved ->
+        if (saved) showBackground() else toast(R.string.background_failed)
+    }
+
+    private fun showBackground() {
+        background = Background.version(this)
+        inBackground(worker, { Background.load(this) }) { drawable ->
+            if (drawable != null) window.setBackgroundDrawable(drawable)
+            else window.setBackgroundDrawableResource(SharedR.color.background)
         }
     }
 
@@ -221,6 +243,7 @@ class MainActivity : Activity() {
             button(R.string.all_apps) { screens.openAllApps() },
             button(R.string.stop_all) { stopAll() },
         )
+        system += button(R.string.background) { chooseBackground() }
         if (!RecentApps.isAllowed(this)) system += button(R.string.allow_usage) { screens.openUsageAccess() }
         addRow(system)
         rowsView.addDivider(side = 48, top = 4, bottom = 4)
@@ -230,8 +253,8 @@ class MainActivity : Activity() {
             button(R.string.reboot) { confirm(getString(R.string.reboot_confirm)) { adb.reboot() } },
             button(R.string.suspend) { adb.suspendTv() },
         )
-        val launcher = mutableListOf(button(R.string.open_old_launcher) { openOldLauncher() })
-        if (!HomeSwitch.isEnabled(this)) launcher += button(R.string.use_as_home) { becomeHome() }
+        val launcher = mutableListOf(button(R.string.old_launcher) { showOldLauncherMenu() })
+        if (!HomeSwitch.isDefault(this)) launcher += button(R.string.use_as_home) { becomeHome() }
         addRow(power, launcher)
     }
 
@@ -402,24 +425,44 @@ class MainActivity : Activity() {
         )
     }
 
+    private fun chooseBackground() {
+        val choose = { screens.chooseBackground(REQUEST_BACKGROUND) }
+        if (Background.version(this) == Background.NONE) return choose()
+        showMenu(
+            getString(R.string.background),
+            listOf(
+                getString(R.string.choose_image) to choose,
+                getString(R.string.remove_background) to {
+                    Background.remove(this)
+                    showBackground()
+                },
+            ),
+        )
+    }
+
     private fun becomeHome() {
         HomeSwitch.enable(this)
         screens.start(HomeSwitch.homeIntent) // Android asks which launcher to use
     }
 
-    private fun openOldLauncher() {
-        val old = HomeSwitch.oldLauncher(this) ?: return toast(R.string.not_available)
-        if (!HomeSwitch.isEnabled(this)) return screens.start(old)
-        showMenu(
-            getString(R.string.open_old_launcher),
-            listOf(
-                getString(R.string.open_once) to { screens.start(old) },
-                getString(R.string.restore_home) to {
-                    HomeSwitch.disable(this)
-                    screens.start(old)
-                },
-            ),
-        )
+    private fun showOldLauncherMenu() {
+        val old = OldLauncher.find(this) ?: return toast(R.string.not_available)
+        val items = mutableListOf(getString(R.string.open) to { openOldLauncher(old) })
+        // Only while we are Home, or there would be none.
+        if (!OldLauncher.isDisabled(this) && HomeSwitch.isDefault(this)) {
+            items += getString(R.string.disable) to { disableOldLauncher() }
+        }
+        showMenu(getString(R.string.old_launcher), items)
+    }
+
+    /** Opens it once; we stay the default. */
+    private fun openOldLauncher(old: ComponentName) {
+        val open = { screens.start(OldLauncher.intent(old)) }
+        if (OldLauncher.isDisabled(this)) adb.setOldLauncherEnabled(true, open) else open()
+    }
+
+    private fun disableOldLauncher() = confirm(getString(R.string.disable_old_confirm), R.string.disable) {
+        adb.setOldLauncherEnabled(false) { toast(R.string.old_disabled) }
     }
 
     // endregion
@@ -428,6 +471,7 @@ class MainActivity : Activity() {
         const val KEY_LAYOUT = "layout"
         const val KEY_STOPPED = "stopped_at"
         const val REQUEST_ACCOUNT = 1
+        const val REQUEST_BACKGROUND = 2
         const val COLUMNS = 6
 
         /** First on the Apps screen, in this order. */

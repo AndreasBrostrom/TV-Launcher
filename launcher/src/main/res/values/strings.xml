@@ -34,15 +34,21 @@
     <string name="stopped_all">Stopped background apps</string>
     <string name="allow_usage">Show recently used</string>
     <string name="usage_hint">Choose Special app access, then Usage access, and turn on TV Launcher</string>
+    <string name="background">Background</string>
+    <string name="choose_image">Choose image</string>
+    <string name="remove_background">Remove background</string>
+    <string name="background_failed">Could not use that image</string>
+    <string name="files_missing">Choosing a background needs the newest Files app</string>
     <string name="shut_down">Shut down TV</string>
     <string name="shut_down_confirm">Shut down the TV?</string>
     <string name="reboot">Reboot TV</string>
     <string name="reboot_confirm">Reboot the TV?</string>
     <string name="reboot_hint">Choose Restart on this page</string>
     <string name="suspend">Suspend TV</string>
-    <string name="open_old_launcher">Open old launcher</string>
-    <string name="open_once">Open once</string>
-    <string name="restore_home">Make old launcher the default</string>
+    <string name="old_launcher">Old launcher</string>
+    <string name="disable">Disable</string>
+    <string name="disable_old_confirm">Disable the old launcher? Google\'s recommendations are turned off with it, and so may be the notification panel. Open turns them on again. Do that before uninstalling TV Launcher.</string>
+    <string name="old_disabled">Old launcher disabled</string>
     <string name="use_as_home">Use as home launcher</string>
 
     <!-- Our tiles -->

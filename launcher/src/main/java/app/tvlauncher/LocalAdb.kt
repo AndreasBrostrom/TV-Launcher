@@ -26,8 +26,11 @@ import javax.crypto.Cipher
  */
 class LocalAdb(private val keyFile: File, private val port: Int = 5555) {
 
-    /** Runs one adb service, such as "reboot:". Blocks, possibly on the TV's approval dialog. */
-    fun run(service: String) {
+    /**
+     * Runs one adb service, such as "reboot:". Blocks, possibly on the TV's approval dialog.
+     * Gives up waiting, without an error, when the service is silent for [timeoutMs].
+     */
+    fun run(service: String, timeoutMs: Int = 5_000) {
         Socket().use { socket ->
             // A literal address: never anything but this device.
             socket.connect(InetSocketAddress(InetAddress.getByAddress(byteArrayOf(127, 0, 0, 1)), port), 3_000)
@@ -35,6 +38,7 @@ class LocalAdb(private val keyFile: File, private val port: Int = 5555) {
             val input = DataInputStream(socket.getInputStream())
             val output = socket.getOutputStream()
             handshake(socket, input, output)
+            socket.soTimeout = timeoutMs
 
             send(output, OPEN, LOCAL_ID, 0, cString(service))
             val reply = read(input)
@@ -59,10 +63,7 @@ class LocalAdb(private val keyFile: File, private val port: Int = 5555) {
         while (true) {
             val message = read(input)
             when {
-                message.command == CNXN -> {
-                    socket.soTimeout = 5_000
-                    return
-                }
+                message.command == CNXN -> return
                 message.command == AUTH && message.arg0 == AUTH_TOKEN && attempt == 0 ->
                     send(output, AUTH, AUTH_SIGNATURE, 0, sign(key, message.data))
                 message.command == AUTH && message.arg0 == AUTH_TOKEN && attempt == 1 -> {

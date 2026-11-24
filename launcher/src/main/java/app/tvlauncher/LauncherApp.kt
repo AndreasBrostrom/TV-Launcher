@@ -4,10 +4,13 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.os.SystemClock
+import android.provider.Settings
+import kotlin.concurrent.thread
 
 class LauncherApp : Application() {
     override fun onCreate() {
         super.onCreate()
+        WakeGuard().register(this)
         val next = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, error ->
             runCatching { giveUpHomeIfCrashLooping() }
@@ -19,20 +22,26 @@ class LauncherApp : Application() {
     @SuppressLint("ApplySharedPref") // commit: the process is about to die
     private fun giveUpHomeIfCrashLooping() {
         val prefs = getSharedPreferences("crashes", Context.MODE_PRIVATE)
-        val now = SystemClock.elapsedRealtime()
-        val recent = prefs.getString("times", "").orEmpty()
-            .split(',').mapNotNull(String::toLongOrNull)
-            .filter { now - it in 0..WINDOW_MS } + now
-        if (recent.size >= LIMIT) {
-            HomeSwitch.disable(this)
+        val log = CrashLog(
+            prefs.getInt("boot", -1),
+            prefs.getString("times", "").orEmpty().split(',').mapNotNull(String::toLongOrNull),
+        ).add(
+            Settings.Global.getInt(contentResolver, Settings.Global.BOOT_COUNT, 0),
+            SystemClock.elapsedRealtime(),
+        )
+        if (log.isLooping) {
+            // Without the old launcher there would be no Home at all. Not on the main
+            // thread, where networking is not allowed, not even to ourselves.
+            var ready = false
+            thread { runCatching { ready = OldLauncher.ensureEnabled(this) } }.join(ENABLE_MS)
+            if (ready) HomeSwitch.disable(this)
             prefs.edit().clear().commit()
         } else {
-            prefs.edit().putString("times", recent.joinToString(",")).commit()
+            prefs.edit().putInt("boot", log.boot).putString("times", log.times.joinToString(",")).commit()
         }
     }
 
     private companion object {
-        const val WINDOW_MS = 60_000L
-        const val LIMIT = 3
+        const val ENABLE_MS = 25_000L
     }
 }

@@ -24,14 +24,6 @@ object HomeSwitch {
 
     fun disable(context: Context) = set(context, PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
 
-    /** The launcher that was there before us, whatever its vendor. */
-    fun oldLauncher(context: Context): Intent? =
-        context.packageManager.queryIntentActivities(homeIntent, 0)
-            .filter { it.activityInfo.packageName != context.packageName }
-            .maxByOrNull { it.priority } // Settings' FallbackHome sits at -1000
-            ?.takeIf { it.priority >= 0 }
-            ?.let { homeIntent.setClassName(it.activityInfo.packageName, it.activityInfo.name) }
-
     private fun set(context: Context, state: Int) =
         context.packageManager.setComponentEnabledSetting(
             alias(context), state, PackageManager.DONT_KILL_APP,

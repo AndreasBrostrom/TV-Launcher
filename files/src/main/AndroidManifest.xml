@@ -36,6 +36,13 @@
             </intent-filter>
         </activity>
 
+        <!-- Opened by the launcher. Returns only the image the user picks. -->
+        <activity
+            android:name=".BackgroundPicker"
+            android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|orientation"
+            android:exported="true"
+            android:screenOrientation="landscape" />
+
         <!-- Hands single opened files to other apps, read-only. -->
         <provider
             android:name=".FileProvider"
